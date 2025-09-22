@@ -61,13 +61,15 @@ ScrollZoomControlMethod.prototype.destroy = function() {
 
 
 ScrollZoomControlMethod.prototype.withoutSmoothing = function(e) {
-  this._dynamics.offset = wheelEventDelta(e) * this._opts.zoomDelta;
-  this.emit('parameterDynamics', 'zoom', this._dynamics);
+  if (e.ctrlKey) {//feat: enable zoom only with Ctrl + wheel to preserve page scroll behavior
+    this._dynamics.offset = wheelEventDelta(e) * this._opts.zoomDelta;
+    this.emit('parameterDynamics', 'zoom', this._dynamics);
 
-  e.preventDefault();
+    e.preventDefault();
 
-  this.emit('active');
-  this.emit('inactive');
+    this.emit('active');
+    this.emit('inactive');
+  }
 };
 
 
@@ -89,16 +91,17 @@ ScrollZoomControlMethod.prototype.withSmoothing = function(e) {
     var zoomChangeFromEvent = wheelEventDelta(this._eventList[i]) * this._opts.zoomDelta;
     velocity += zoomChangeFromEvent / this._opts.frictionTime;
   }
+  if (e.ctrlKey) {//feat: enable zoom only with Ctrl + wheel to preserve page scroll behavior
+    this._dynamics.velocity = velocity;
+    this._dynamics.friction = Math.abs(velocity) / this._opts.frictionTime;
 
-  this._dynamics.velocity = velocity;
-  this._dynamics.friction = Math.abs(velocity) / this._opts.frictionTime;
+    this.emit('parameterDynamics', 'zoom', this._dynamics);
 
-  this.emit('parameterDynamics', 'zoom', this._dynamics);
+    e.preventDefault();
 
-  e.preventDefault();
-
-  this.emit('active');
-  this.emit('inactive');
+    this.emit('active');
+    this.emit('inactive');
+  }
 };
 
 
